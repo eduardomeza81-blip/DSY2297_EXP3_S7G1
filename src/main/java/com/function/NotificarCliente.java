@@ -1,65 +1,54 @@
 package com.function;
 
 import com.microsoft.azure.functions.ExecutionContext;
-import com.microsoft.azure.functions.HttpMethod;
-import com.microsoft.azure.functions.HttpRequestMessage;
-import com.microsoft.azure.functions.HttpResponseMessage;
-import com.microsoft.azure.functions.HttpStatus;
-import com.microsoft.azure.functions.annotation.AuthorizationLevel;
+import com.microsoft.azure.functions.annotation.EventGridTrigger;
 import com.microsoft.azure.functions.annotation.FunctionName;
-import com.microsoft.azure.functions.annotation.HttpTrigger;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 public class NotificarCliente {
 
     @FunctionName("NotificarCliente")
-    public HttpResponseMessage run(
-            @HttpTrigger(
-                    name = "req",
-                    methods = {HttpMethod.POST},
-                    authLevel = AuthorizationLevel.ANONYMOUS,
-                    route = "notificaciones"
+    public void run(
+            @EventGridTrigger(
+                    name = "evento"
             )
-            HttpRequestMessage<Optional<String>> request,
+            String evento,
             final ExecutionContext context) {
 
-        context.getLogger().info("Procesando notificación al cliente.");
+        context.getLogger().info(
+                "Evento recibido desde Azure Event Grid."
+        );
 
-        String body = request.getBody().orElse(null);
-
-        if (body == null || body.isBlank()) {
-            return request
-                    .createResponseBuilder(HttpStatus.BAD_REQUEST)
-                    .header("Content-Type", "application/json")
-                    .body("""
-                    {
-                        "mensaje": "Debe enviar los datos de la notificación"
-                    }
-                    """)
-                    .build();
-        }
+        context.getLogger().info(
+                "Contenido del evento: " + evento
+        );
 
         String idNotificacion = UUID.randomUUID().toString();
 
-        String respuesta = String.format("""
-        {
-            "idNotificacion": "%s",
-            "estado": "ENVIADA",
-            "fechaEnvio": "%s",
-            "datosRecibidos": %s
-        }
-        """,
-        idNotificacion,
-        LocalDateTime.now(),
-        body);
+        context.getLogger().info(
+                "========================================"
+        );
 
-        return request
-                .createResponseBuilder(HttpStatus.OK)
-                .header("Content-Type", "application/json")
-                .body(respuesta)
-                .build();
+        context.getLogger().info(
+                "NOTIFICACIÓN AL CLIENTE"
+        );
+
+        context.getLogger().info(
+                "Id Notificación: " + idNotificacion
+        );
+
+        context.getLogger().info(
+                "Estado: ENVIADA"
+        );
+
+        context.getLogger().info(
+                "Fecha envío: " + LocalDateTime.now()
+        );
+
+        context.getLogger().info(
+                "========================================"
+        );
     }
 }
